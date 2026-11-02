@@ -177,6 +177,30 @@ async function makeCsv() {
   const name1 = await page.evaluate(() => window.__urbis.project.roads[0].name);
   assert(name1 === name0, 'versão restaurada');
 
+  // 13) encaixe: nova rua começando no eixo da avenida
+  await page.click('.vtab:has-text("Planta")');
+  await page.click('.tool:has-text("Desenhar via")');
+  const cbox = await page.locator('.canvas-wrap canvas').first().boundingBox();
+  const near = await page.evaluate(() => {
+    const s = window.__urbis, v = window.__plan;
+    const r = s.roadResult(s.project.roads[0].id);
+    const p = r.alignment.offsetPoint(r.alignment.startStation + 120, 3 / v.k * 4); // ~4 px fora do eixo
+    return v.w2s(p.x, p.y);
+  });
+  await page.mouse.move(cbox.x + near[0], cbox.y + near[1]);
+  await page.mouse.click(cbox.x + near[0], cbox.y + near[1]);
+  await page.mouse.move(cbox.x + near[0] + 30, cbox.y + near[1] - 160, { steps: 4 });
+  await page.screenshot({ path: OUT + '/16-encaixe.png' });
+  await page.mouse.dblclick(cbox.x + near[0] + 30, cbox.y + near[1] - 160);
+  await page.waitForTimeout(1200);
+  const snapDist = await page.evaluate(() => {
+    const s = window.__urbis;
+    const nr = s.project.roads[s.project.roads.length - 1];
+    const av = s.roadResult(s.project.roads[0].id);
+    return av.alignment.stationOffset(nr.pis[0].x, nr.pis[0].y).dist;
+  });
+  assert(snapDist < 1e-6, `nova rua encaixada no eixo da avenida (distância ${snapDist.toExponential(1)} m)`);
+
   console.log('ERROS DE PÁGINA:\n' + (errors.join('\n') || '(nenhum)'));
   console.log('Capturas em ' + OUT);
   if (errors.length) process.exitCode = 1;

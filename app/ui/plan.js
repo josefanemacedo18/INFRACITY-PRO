@@ -225,6 +225,7 @@ export class PlanView {
     }
     // rascunho da ferramenta
     this._drawDraft();
+    this._drawSnap();
     this._drawMeasure();
     this.screenTransform();
     this._drawScale();
@@ -558,6 +559,18 @@ export class PlanView {
     }
   }
 
+  _drawSnap() {
+    if (store.ui.tool !== 'road' || !this.snap) return;
+    const ctx = this.ctx;
+    this.screenTransform();
+    const [sx, sy] = this.w2s(this.snap.x, this.snap.y);
+    ctx.strokeStyle = '#ffd166'; ctx.lineWidth = 2;
+    if (this.snap.kind === 'ponta') ctx.strokeRect(sx - 6, sy - 6, 12, 12);
+    else { ctx.beginPath(); ctx.moveTo(sx, sy - 8); ctx.lineTo(sx + 8, sy); ctx.lineTo(sx, sy + 8); ctx.lineTo(sx - 8, sy); ctx.closePath(); ctx.stroke(); }
+    ctx.fillStyle = '#ffd166'; ctx.font = '600 11px Segoe UI'; ctx.textAlign = 'left'; ctx.textBaseline = 'bottom';
+    ctx.fillText(this.snap.kind === 'ponta' ? `ponta de ${this.snap.road}` : `eixo de ${this.snap.road}`, sx + 10, sy - 6);
+  }
+
   _drawDraft() {
     const ctx = this.ctx;
     const tool = store.ui.tool;
@@ -656,6 +669,30 @@ export class PlanView {
     return best;
   }
 
+  /** Encaixe ao desenhar vias: extremidades de vias existentes (prioridade) e eixo das vias. */
+  _snap(w) {
+    const tol = 12 / this.k;
+    let best = null;
+    for (const road of store.project.roads) {
+      for (const idx of [0, road.pis.length - 1]) {
+        const p = road.pis[idx];
+        if (!p) continue;
+        const d = Math.hypot(p.x - w.x, p.y - w.y);
+        if (d <= tol && (!best || d < best.d)) best = { x: p.x, y: p.y, d, kind: 'ponta', road: road.name };
+      }
+    }
+    if (best) return best;
+    for (const road of store.project.roads) {
+      const r = store.roadResult(road.id);
+      if (!r?.alignment?.elements?.length) continue;
+      const so = r.alignment.stationOffset(w.x, w.y);
+      if (so.dist <= tol && so.station > r.alignment.startStation + 0.01 && so.station < r.alignment.endStation - 0.01 && (!best || so.dist < best.d)) {
+        best = { x: so.x, y: so.y, d: so.dist, kind: 'eixo', road: road.name };
+      }
+    }
+    return best;
+  }
+
   _hitPI(sxy) {
     const sel = store.ui.selection;
     const roads = sel?.kind === 'road' ? [store.road(sel.id)].filter(Boolean) : store.ui.mode === 'tecnico' ? store.project.roads : [];
@@ -684,7 +721,8 @@ export class PlanView {
     }
     if (e.button !== 0) return;
     if (tool === 'road' || tool === 'gleba' || tool === 'green' || tool === 'institutional') {
-      this.draft.push(w);
+      const sp = tool === 'road' ? this._snap(w) : null;
+      this.draft.push(sp ? { x: sp.x, y: sp.y } : w);
       this._updateDraftRoad();
       this.render();
       return;
@@ -768,7 +806,9 @@ export class PlanView {
       return;
     }
     if (!inside) return;
-    this.mouse = w;
+    this.snap = store.ui.tool === 'road' ? this._snap(w) : null;
+    this.mouse = this.snap ? { x: this.snap.x, y: this.snap.y } : w;
+    if (store.ui.tool === 'road') this.render();
     if (this.draft.length && store.ui.tool === 'road') this._updateDraftRoad();
     if (this.draft.length || store.ui.tool === 'measure') this.render();
     // leitura de coordenadas
