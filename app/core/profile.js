@@ -164,7 +164,7 @@ export function autoProfile(ground, opts = {}) {
   const total = s1 - s0;
   const spacing = opts.spacing || Math.max(60, Math.min(200, total / 4));
   const maxG = opts.maxGrade ?? 0.08;
-  const minG = opts.minGrade ?? 0.005;
+  const minG = (opts.minGrade ?? 0.005) * 1.02; // margem para o arredondamento das cotas
   const kCrest = opts.kCrest ?? 10, kSag = opts.kSag ?? 10;
   const lift = opts.lift ?? 0; // elevação adicional do greide sobre o terreno
   const zAt = (s) => {

@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>URBIS</title>
+  <link rel="stylesheet" href="css/urbis.css">
+  <script type="importmap">
+  {
+    "imports": {
+      "delaunator": "./vendor/delaunator/index.js",
+      "robust-predicates": "./vendor/robust-predicates/index.js",
+      "@kninnug/constrainautor": "./vendor/constrainautor/Constrainautor.mjs",
+      "polygon-clipping": "./vendor/polygon-clipping/polygon-clipping.esm.js",
+      "splaytree": "./vendor/splaytree/splaytree.js",
+      "preact": "./vendor/preact/preact.module.js",
+      "preact/hooks": "./vendor/preact/hooks.module.js",
+      "htm": "./vendor/htm/htm.module.js",
+      "htm/preact": "./vendor/htm/preact.module.js",
+      "three": "./vendor/three/three.module.js",
+      "three/addons/": "./vendor/three/addons/",
+      "libredwg-web": "./vendor/libredwg/dist/libredwg-web.js"
+    }
+  }
+  </script>
+  <script src="vendor/jspdf/jspdf.umd.min.js"></script>
+  <script src="vendor/exceljs/exceljs.min.js"></script>
+</head>
+<body>
+  <div id="app"><div class="boot">URBIS carregando…</div></div>
+  <script type="module" src="ui/main.js"></script>
+</body>
+</html>

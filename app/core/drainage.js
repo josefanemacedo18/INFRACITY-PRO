@@ -135,16 +135,18 @@ export function designNetwork(net, o) {
     const Q = rationalQ(1, i, acAcc);
     const groundSlope = (up.z - dn.z) / l.length;
     let S = Math.max(sMin, groundSlope);
-    let pipe = designPipe(Q, S, { n, minD: o.minD, maxYD: o.maxYD });
+    // o diâmetro nunca diminui para jusante
+    const minD = Math.max(o.minD ?? DRAINAGE.pipeMinDiameter.value, ...ups.map((u) => u.D));
+    let pipe = designPipe(Q, S, { n, minD, maxYD: o.maxYD });
     // ajusta declividade para velocidade mínima
     let guard = 0;
-    while (pipe.ok && pipe.V < vmin && guard++ < 40) { S *= 1.15; pipe = designPipe(Q, S, { n, minD: o.minD, maxYD: o.maxYD }); }
+    while (pipe.ok && pipe.V < vmin && guard++ < 40) { S *= 1.15; pipe = designPipe(Q, S, { n, minD, maxYD: o.maxYD }); }
     const upInvertCover = up.z - cover - pipe.D;
     const upInvertFromUps = ups.length ? Math.min(...ups.map((u) => u.invertOut)) : Infinity;
     const invUp = Math.min(upInvertCover, upInvertFromUps);
     let invDn = invUp - S * l.length;
     const dnMax = dn.z - cover - pipe.D;
-    if (invDn > dnMax) { invDn = dnMax; S = (invUp - invDn) / l.length; pipe = designPipe(Q, S, { n, minD: o.minD, maxYD: o.maxYD }); }
+    if (invDn > dnMax) { invDn = dnMax; S = (invUp - invDn) / l.length; pipe = designPipe(Q, S, { n, minD, maxYD: o.maxYD }); }
     const travel = pipe.V ? l.length / pipe.V / 60 : 0;
     const rec = {
       id: l.id, from: l.from, to: l.to, length: l.length, areaAcc: acAcc, tc, i, Q,
@@ -155,20 +157,20 @@ export function designNetwork(net, o) {
     if (!pipe.ok) rec.warnings.push('Vazão excede o maior diâmetro disponível.');
     if (pipe.V && pipe.V > vmax) rec.warnings.push(`Velocidade ${pipe.V.toFixed(2)} m/s acima da máxima.`);
     if (pipe.V && pipe.V < vmin) rec.warnings.push(`Velocidade ${pipe.V.toFixed(2)} m/s abaixo da mínima.`);
-    state.set(l.id, { acOut: acAcc, tcOut: tc + travel, invertOut: invDn });
+    state.set(l.id, { acOut: acAcc, tcOut: tc + travel, invertOut: invDn, D: pipe.D });
     result.push(rec);
   }
   return result;
 }
 
-/** Gera rede ao longo do eixo: PVs a cada 'spacing' m no lado indicado, deságue no fim. */
+/** Gera rede ao longo do eixo: PVs igualmente espaçados (até 'spacing' m) no lado indicado. */
 export function networkAlongAlignment(alignment, profile, surface, o) {
   const spacing = o.spacing || 50;
   const offset = o.offset ?? 0;
   const s0 = alignment.startStation, s1 = alignment.endStation;
+  const nSeg = Math.max(1, Math.ceil((s1 - s0) / spacing - 1e-9));
   const stations = [];
-  for (let s = s0; s < s1 - 1e-6; s += spacing) stations.push(s);
-  stations.push(s1);
+  for (let k = 0; k <= nSeg; k++) stations.push(s0 + ((s1 - s0) * k) / nSeg);
   const dir = o.flowToEnd ?? true;
   const list = dir ? stations : [...stations].reverse();
   const nodes = list.map((s, k) => {
