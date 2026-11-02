@@ -1,0 +1,68 @@
+name: Instalador Windows
+
+on:
+  push:
+    branches:
+      - main
+      - 'claude/**'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - name: Baixar o código
+        uses: actions/checkout@v4
+
+      - name: Preparar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Instalar dependências
+        run: npm ci
+
+      - name: Testes automáticos
+        run: npm test
+
+      - name: Gerar instalador e versão portátil
+        run: npm run dist
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+
+      - name: Ler versão
+        id: v
+        shell: bash
+        run: echo "version=$(node -p "require('./package.json').version")" >> "$GITHUB_OUTPUT"
+
+      - name: Guardar arquivos da compilação
+        uses: actions/upload-artifact@v4
+        with:
+          name: URBIS-${{ steps.v.outputs.version }}-build-${{ github.run_number }}
+          path: |
+            dist/*.exe
+            dist/*.zip
+
+      - name: Publicar na página de Releases
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ steps.v.outputs.version }}-build.${{ github.run_number }}
+          name: URBIS ${{ steps.v.outputs.version }} (build ${{ github.run_number }})
+          target_commitish: ${{ github.sha }}
+          make_latest: true
+          body: |
+            Instalador do URBIS para Windows (64 bits).
+
+            - **URBIS-Setup-${{ steps.v.outputs.version }}.exe**: instalador. Execute e siga as etapas. Não precisa de permissão de administrador.
+            - **URBIS-Portatil-${{ steps.v.outputs.version }}-x64.zip**: versão portátil. Descompacte e abra `URBIS.exe`.
+
+            O instalador não tem assinatura digital. Se o Windows mostrar "O Windows protegeu o computador", clique em **Mais informações** e depois em **Executar assim mesmo**.
+
+            Commit: ${{ github.sha }}
+          files: |
+            dist/*.exe
+            dist/*.zip

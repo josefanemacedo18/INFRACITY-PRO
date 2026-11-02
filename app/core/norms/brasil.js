@@ -274,25 +274,27 @@ export const NORM_PROFILE = {
 /** Lista plana dos parâmetros para exibição (painel de normas e memorial). */
 export function normTable() {
   const rows = [];
+  const br = (v) => String(v).replace('.', ',');
+  const list = (arr) => arr.map(br).join(' / ');
   const push = (grupo, nome, valor, meta) => rows.push({ grupo, nome, valor, fonte: SOURCES[meta.src] || meta.src, status: meta.status, nota: meta.note || '' });
-  push('Geometria', 'Atrito transversal máximo f (30 a 120 km/h)', GEOMETRIC.fmax.values.join(' / '), GEOMETRIC.fmax);
+  push('Geometria', 'Atrito transversal máximo f (30 a 120 km/h)', list(GEOMETRIC.fmax.values), GEOMETRIC.fmax);
   push('Geometria', 'Raio com superelevação dispensável (m)', GEOMETRIC.rNoSuper.values.slice(0, 8).join(' / '), GEOMETRIC.rNoSuper);
   push('Geometria', 'Distância de visibilidade de parada mínima (m)', GEOMETRIC.dvpMin.values.join(' / '), GEOMETRIC.dvpMin);
   push('Geometria', 'K mínimo convexa', GEOMETRIC.kCrestMin.values.join(' / '), GEOMETRIC.kCrestMin);
   push('Geometria', 'K mínimo côncava', GEOMETRIC.kSagMin.values.join(' / '), GEOMETRIC.kSagMin);
-  push('Geometria', 'Rampa relativa máxima borda/eixo (%)', GEOMETRIC.relGradeMax.values.join(' / '), GEOMETRIC.relGradeMax);
+  push('Geometria', 'Rampa relativa máxima borda/eixo (%)', list(GEOMETRIC.relGradeMax.values), GEOMETRIC.relGradeMax);
   push('Geometria', 'Comprimento mínimo de curva vertical', 'L ≥ 0,6·V', GEOMETRIC.lVertMinFactor);
   push('Geometria', 'Rampa mínima', '0,5%', GEOMETRIC.minGrade);
   push('Trânsito', 'Velocidades máximas (trânsito rápido / arterial / coletora / local)', '80 / 60 / 40 / 30 km/h', CTB_SPEEDS);
-  for (const v of Object.values(CROSS_SECTION)) push('Seção transversal', v.label, String(v.value), v);
+  for (const v of Object.values(CROSS_SECTION)) push('Seção transversal', v.label, br(v.value), v);
   push('Drenagem', 'Lâmina máxima na sarjeta (guia 15 cm)', '0,13 m', DRAINAGE.gutterMaxDepth);
-  push('Drenagem', 'Diâmetros comerciais de tubos (m)', DRAINAGE.pipeDiameters.values.join(' / '), DRAINAGE.pipeDiameters);
-  for (const k of ['pipeMinDiameter', 'pipeMaxDepthRatio', 'pipeVmin', 'pipeVmax', 'minCover', 'gutterVmax', 'tcMin', 'rationalMaxArea']) push('Drenagem', DRAINAGE[k].label, String(DRAINAGE[k].value), DRAINAGE[k]);
+  push('Drenagem', 'Diâmetros comerciais de tubos (m)', list(DRAINAGE.pipeDiameters.values), DRAINAGE.pipeDiameters);
+  for (const k of ['pipeMinDiameter', 'pipeMaxDepthRatio', 'pipeVmin', 'pipeVmax', 'minCover', 'gutterVmax', 'tcMin', 'rationalMaxArea']) push('Drenagem', DRAINAGE[k].label, br(DRAINAGE[k].value), DRAINAGE[k]);
   push('Pavimentação', 'Espessura total (DNER/1981)', 'Ht = 77,67·N^0,0482·CBR^-0,598 (cm)', PAVEMENT.formula);
   push('Pavimentação', 'Revestimento mínimo por N', '≤10⁶: TS; ≤5·10⁶: 5 cm; ≤10⁷: 7,5 cm; ≤5·10⁷: 10 cm; >5·10⁷: 12,5 cm', PAVEMENT.minSurfaceMeta);
   push('Sinalização', 'Largura de linhas longitudinais', '0,10 m (V < 80) / 0,15 m (V ≥ 80)', SIGNAGE.lineWidthMeta);
   push('Sinalização', 'Cadência de linhas seccionadas', '2/4 m (V ≤ 60) / 4/12 m (V > 60)', SIGNAGE.dashMeta);
   push('Sinalização', 'Placa R-1 (lado, urbana / rodovia)', '0,35 / 0,50 m (mín. 0,25 / 0,40 m)', SIGN_SIZES.octogono);
-  for (const v of [LAND_USE.minLotArea, LAND_USE.minLotFront, LAND_USE.nonBuildableRoad, LAND_USE.appSpring, LAND_USE.appUrbanLake]) push('Parcelamento', v.label, String(v.value), v);
+  for (const v of [LAND_USE.minLotArea, LAND_USE.minLotFront, LAND_USE.nonBuildableRoad, LAND_USE.appSpring, LAND_USE.appUrbanLake]) push('Parcelamento', v.label, br(v.value), v);
   return rows;
 }

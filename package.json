@@ -11,14 +11,16 @@
   "scripts": {
     "vendor": "node scripts/copy-vendor.js",
     "test": "node --test tests/*.test.js",
-    "serve": "node scripts/serve.js",
+    "serve": "npm run vendor && node scripts/serve.js",
     "start": "npm run vendor && electron .",
-    "dist": "npm run vendor && electron-builder --win nsis --publish never"
+    "dist": "npm run vendor && electron-builder --win --x64 --publish never"
   },
-  "dependencies": {
+  "devDependencies": {
     "@kninnug/constrainautor": "^4.1.0",
     "@mlightcad/libredwg-web": "^0.8.3",
     "delaunator": "^5.1.0",
+    "electron": "^45.2.1",
+    "electron-builder": "^26.0.0",
     "exceljs": "^4.4.0",
     "htm": "^3.1.1",
     "jspdf": "^4.2.1",
@@ -27,10 +29,6 @@
     "robust-predicates": "^3.0.3",
     "splaytree": "^3.1.2",
     "three": "^0.187.0"
-  },
-  "devDependencies": {
-    "electron": "^45.2.1",
-    "electron-builder": "^26.0.0"
   },
   "build": {
     "appId": "br.com.urbis.app",
@@ -50,7 +48,8 @@
         "ext": "urbis",
         "name": "Projeto URBIS",
         "description": "Projeto URBIS",
-        "role": "Editor"
+        "role": "Editor",
+        "icon": "build/icon.png"
       }
     ],
     "win": {
@@ -60,10 +59,16 @@
           "arch": [
             "x64"
           ]
+        },
+        {
+          "target": "zip",
+          "arch": [
+            "x64"
+          ]
         }
       ],
       "icon": "build/icon.png",
-      "artifactName": "URBIS-Setup-${version}.${ext}"
+      "artifactName": "URBIS-Portatil-${version}-${arch}.${ext}"
     },
     "nsis": {
       "oneClick": false,
@@ -72,7 +77,8 @@
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
       "shortcutName": "URBIS",
-      "language": "1046"
+      "language": "1046",
+      "artifactName": "URBIS-Setup-${version}.${ext}"
     }
   }
 }
