@@ -28,6 +28,8 @@
 2. Clique em **Desenhar via** e clique os pontos do eixo sobre o terreno. A via aparece com as curvas enquanto você desenha.
 3. **Duplo clique** ou **Enter** conclui. **Backspace** desfaz o último ponto. **Esc** cancela.
 
+Ao clicar perto da ponta ou do eixo de uma via existente, o ponto **encaixa** nela (marcador amarelo), para que as ruas se conectem com precisão.
+
 Os raios são escolhidos automaticamente entre Rmin e 2,5·Rmin, cabendo nas tangentes e na transição da superelevação. Para fixar um raio, edite-o na aba **Eixo**: a marca de raio automático é desligada.
 
 ### 2.4 Editar

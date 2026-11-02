@@ -93,8 +93,21 @@ function smokeTest(w, outDir) {
         await a.actSample();
         const dwg = await import('./core/importers/dwg.js');
         const lib = await dwg.loadLibreDwg('vendor/libredwg/wasm/');
-        return { host: !!window.urbisHost, roads: s.project.roads.length, lots: s.project.parcels.lots.length, jspdf: !!window.jspdf, exceljs: !!window.ExcelJS, libredwg: !!lib.lib, title: document.title };
+        const out = ${JSON.stringify(outDir)};
+        const ctx = { project: s.project, results: s.results, model: s.model };
+        const pdf = await import('./core/report/pdf.js');
+        const xlsx = await import('./core/report/xlsx.js');
+        const proj = await import('./core/project.js');
+        const sheets = pdf.buildSheets(window.jspdf.jsPDF, ctx, { paper: 'A1', planScale: 1000, vScale: 100, sectionScale: 200, sheets: true, sections: true, parcels: true });
+        const saved = [
+          await window.urbisHost.saveFile({ name: 'p.pdf', data: sheets.doc.output('arraybuffer'), path: out + '/pranchas-electron.pdf' }),
+          await window.urbisHost.saveFile({ name: 'm.pdf', data: pdf.buildMemorialPdf(window.jspdf.jsPDF, ctx).output('arraybuffer'), path: out + '/memorial-electron.pdf' }),
+          await window.urbisHost.saveFile({ name: 'x.xlsx', data: await xlsx.buildWorkbook(window.ExcelJS, s.project, s.results), path: out + '/planilhas-electron.xlsx' }),
+          await window.urbisHost.saveFile({ name: 'p.urbis', data: proj.serializeProject(s.project), path: out + '/projeto-electron.urbis' }),
+        ];
+        return { host: !!window.urbisHost, roads: s.project.roads.length, lots: s.project.parcels.lots.length, jspdf: !!window.jspdf, exceljs: !!window.ExcelJS, libredwg: !!lib.lib, title: document.title, saved };
       })()`);
+      report.files = (report.page.saved || []).map((f) => ({ file: path.basename(f), bytes: fs.existsSync(f) ? fs.statSync(f).size : 0 }));
       await new Promise((r) => setTimeout(r, 1500));
       const img = await w.webContents.capturePage();
       fs.writeFileSync(path.join(outDir, 'electron-smoke.png'), img.toPNG());
