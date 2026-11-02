@@ -545,9 +545,11 @@ export class PlanView {
       ctx.stroke(this._path(P.gleba, true)); ctx.setLineDash([]);
     }
     this.screenTransform();
-    if (res && res.lots && (tech || this.k > 1)) {
+    if (res && res.lots) {
       ctx.font = '10px Segoe UI'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
       for (const l of res.lots) {
+        // rótulo só quando o lote tem tamanho suficiente na tela (evita sobreposição)
+        if (Math.min(l.front || 10, Math.sqrt(l.area)) * this.k < 30) continue;
         const [sx, sy] = this.w2s(l.centroid.x, l.centroid.y);
         if (sx < 0 || sy < 0 || sx > this.W || sy > this.H) continue;
         ctx.fillStyle = '#e6ebf2'; ctx.fillText(`Q${l.block ?? ''}-L${l.number}`, sx, sy - 6);

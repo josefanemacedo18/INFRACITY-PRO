@@ -157,6 +157,25 @@ async function makeCsv() {
   await page.click('.tool:has-text("Normas aplicadas")');
   await page.waitForTimeout(500);
   await page.screenshot({ path: OUT + '/14-normas.png' });
+  await page.click('.modal-head button:has-text("Fechar")');
+
+  // 12) versões: salvar, alterar, comparar e restaurar
+  await page.click('.timeline button:has-text("Salvar versão")');
+  await page.waitForSelector('.modal-head:has-text("Salvar versão")');
+  await page.fill('.modal-body input', 'Alternativa A');
+  await page.click('.modal-foot button.primary');
+  await page.waitForTimeout(600);
+  const nv = await page.evaluate(() => window.__urbis.project.versions.length);
+  assert(nv === 1, 'versão salva sem prompt do navegador');
+  const name0 = await page.evaluate(() => window.__urbis.project.roads[0].name);
+  await page.evaluate(() => window.__urbis.update('Renomear via', (p) => { p.roads[0].name = 'Avenida alterada'; }));
+  await page.click('.timeline button:has-text("Versões")');
+  await page.waitForSelector('.modal-head:has-text("Versões e alternativas")');
+  await page.screenshot({ path: OUT + '/15-versoes.png' });
+  await page.click('.modal-body button:has-text("Restaurar")');
+  await page.waitForTimeout(800);
+  const name1 = await page.evaluate(() => window.__urbis.project.roads[0].name);
+  assert(name1 === name0, 'versão restaurada');
 
   console.log('ERROS DE PÁGINA:\n' + (errors.join('\n') || '(nenhum)'));
   console.log('Capturas em ' + OUT);

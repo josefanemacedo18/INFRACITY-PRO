@@ -48,8 +48,7 @@
         "ext": "urbis",
         "name": "Projeto URBIS",
         "description": "Projeto URBIS",
-        "role": "Editor",
-        "icon": "build/icon.png"
+        "role": "Editor"
       }
     ],
     "win": {

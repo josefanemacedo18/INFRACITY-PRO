@@ -8,7 +8,6 @@ import { ROAD_CLASSES, SIGN_CATALOG, geo } from '../core/norms/brasil.js';
 import { COMPONENT_TYPES, makeComponent, templateWidths } from '../core/template.js';
 import { applyRoadClass } from '../core/project.js';
 import { subdivideBlock, splitDoubleFront, longestEdge } from '../core/lots.js';
-import { saveVersion } from './actions.js';
 
 const upd = (label, fn, coalesce) => store.update(label, fn, coalesce ? { coalesce } : {});
 const roadUpd = (id, label, fn, coalesce) => upd(label, (p) => fn(p.roads.find((r) => r.id === id), p), coalesce ? `${id}:${coalesce}` : null);
@@ -90,7 +89,7 @@ function ProjectPanel() {
     </${Section}>
     <${Section} title="Versões">
       <div class="row-actions">
-        <button class="btn small" onClick=${() => { const n = prompt('Nome da versão/alternativa:', `Alternativa ${p.versions.length + 1}`); if (n) saveVersion(n); }}>Salvar versão atual</button>
+        <button class="btn small" onClick=${() => store.setUI({ dialog: { kind: 'saveVersion' } })}>Salvar versão atual</button>
         <button class="btn small" onClick=${() => store.setUI({ dialog: { kind: 'versions' } })}>Comparar versões</button>
       </div>
     </${Section}>`;
@@ -255,11 +254,11 @@ function RoadTemplate({ road }) {
       ${!tpl.symmetric ? html`<div class="row-actions" style="margin-bottom:6px">${['left', 'right'].map((s) => html`<button class=${'btn small' + (s === side ? ' primary' : '')} onClick=${() => store.setUI({ propTab: { ...store.ui.propTab, tplSide: s } })}>${s === 'left' ? 'Lado esquerdo' : 'Lado direito'}</button>`)}</div>` : null}
       <${Field} label="Canteiro central (largura total)"><${Num} value=${tpl.median} dec=${2} unit="m" min=${0} onChange=${(v) => setT('Canteiro central', (t) => { t.median = v; }, 'median')} /></${Field}>
       <table class="grid">
-        <thead><tr><th>Componente</th><th>Largura</th><th>Decliv.</th><th></th></tr></thead>
+        <thead><tr><th>Componente</th><th>Largura (m)</th><th>Declividade / altura</th><th></th></tr></thead>
         <tbody>${comps.map((c, i) => html`<tr>
           <td><${Select} value=${c.type} options=${typeOpts} onChange=${(v) => setT('Tipo de componente', (t) => { t[side][i] = makeComponent(v, { width: c.width }); })} /></td>
           <td><${Num} value=${c.width} dec=${2} min=${0} onChange=${(v) => setT('Largura do componente', (t) => { t[side][i].width = v; }, 'w' + i)} /></td>
-          <td>${c.type === 'meiofio' ? html`<span title="Altura do meio-fio"><${Num} value=${c.height} dec=${2} onChange=${(v) => setT('Altura do meio-fio', (t) => { t[side][i].height = v; }, 'h' + i)} /></span>` : html`<${Num} value=${c.slope} pct dec=${1} onChange=${(v) => setT('Declividade', (t) => { t[side][i].slope = v; }, 's' + i)} />`}</td>
+          <td>${c.type === 'meiofio' ? html`<span title="Altura do meio-fio (m)"><${Num} value=${c.height} dec=${2} unit="h m" onChange=${(v) => setT('Altura do meio-fio', (t) => { t[side][i].height = v; }, 'h' + i)} /></span>` : html`<${Num} value=${c.slope} pct dec=${1} unit="%" onChange=${(v) => setT('Declividade', (t) => { t[side][i].slope = v; }, 's' + i)} />`}</td>
           <td style="white-space:nowrap">
             <button class="btn small icon" title="Subir" onClick=${() => setT('Reordenar componentes', (t) => { if (i > 0) { const a = t[side]; [a[i - 1], a[i]] = [a[i], a[i - 1]]; } })}>↑</button>
             <button class="btn small icon" title="Remover" onClick=${() => setT('Remover componente', (t) => { t[side].splice(i, 1); })}>✕</button>

@@ -292,6 +292,23 @@ function ProjectDialog() {
   </${Modal}>`;
 }
 
+function SaveVersionDialog() {
+  const [name, setName] = useState(`Alternativa ${store.project.versions.length + 1}`);
+  const [note, setNote] = useState('');
+  const ok = () => {
+    const n = name.trim();
+    if (!n) return;
+    saveVersion(note.trim() ? `${n} — ${note.trim()}` : n);
+    store.setUI({ dialog: null });
+  };
+  return html`<${Modal} title="Salvar versão do projeto" onClose=${() => store.setUI({ dialog: null })}
+    foot=${html`<button class="btn" onClick=${() => store.setUI({ dialog: null })}>Cancelar</button><button class="btn primary" onClick=${ok}>Salvar versão</button>`}>
+    <${Field} label="Nome da versão"><input value=${name} autofocus onInput=${(e) => setName(e.target.value)} onKeyDown=${(e) => e.key === 'Enter' && ok()} /></${Field}>
+    <${Field} label="Observação (opcional)"><input value=${note} onInput=${(e) => setNote(e.target.value)} onKeyDown=${(e) => e.key === 'Enter' && ok()} /></${Field}>
+    <p class="note">A versão guarda vias, seções, greides, loteamento e parâmetros. Use "Versões" para comparar alternativas e restaurar.</p>
+  </${Modal}>`;
+}
+
 function HelpDialog() {
   const rows = [
     ['Desenhar via', 'Clique os pontos do eixo; duplo clique ou Enter conclui; Backspace desfaz o último ponto; Esc cancela'],
@@ -321,6 +338,7 @@ export function Dialogs() {
     case 'export': return html`<${ExportDialog} />`;
     case 'project': return html`<${ProjectDialog} />`;
     case 'help': return html`<${HelpDialog} />`;
+    case 'saveVersion': return html`<${SaveVersionDialog} />`;
     default: return null;
   }
 }

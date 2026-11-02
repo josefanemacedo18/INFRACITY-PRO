@@ -8,7 +8,7 @@ import { Dialogs, startImportPoints, startImportCad } from './dialogs.js';
 import { PlanView } from './plan.js';
 import { ProfileView } from './profileView.js';
 import { SectionView } from './sectionView.js';
-import { actNew, actOpen, actSave, actSample, titleUpdate, scheduleAutosave, saveVersion } from './actions.js';
+import { actNew, actOpen, actSave, actSample, titleUpdate, scheduleAutosave } from './actions.js';
 import { fmt, fmtStation } from '../core/util.js';
 import { utmToGeo, fmtLatLon } from '../core/utm.js';
 import { readAutosave, isDesktop } from './host.js';
@@ -173,7 +173,7 @@ function Timeline() {
       ${h.map((e, i) => html`<button class=${'tl-item' + (i === idx ? ' cur' : '') + (i > idx ? ' future' : '') + (e.label.startsWith('Versão') ? ' version' : '')} title=${`${e.label} — ${new Date(e.time).toLocaleString('pt-BR')}`} onClick=${() => store.goto(i)}>${time(e.time)} · ${e.label}</button>`)}
     </div>
     <div class="tl-sep"></div>
-    <button class="btn small" onClick=${() => { const n = prompt('Nome da versão/alternativa:', `Alternativa ${store.project.versions.length + 1}`); if (n) saveVersion(n); }}>Salvar versão</button>
+    <button class="btn small" onClick=${() => store.setUI({ dialog: { kind: 'saveVersion' } })}>Salvar versão</button>
     <button class="btn small" onClick=${() => store.setUI({ dialog: { kind: 'versions' } })}>Versões (${store.project.versions.length})</button>
   </footer>`;
 }
