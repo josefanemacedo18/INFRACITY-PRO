@@ -1,0 +1,78 @@
+{
+  "name": "urbis",
+  "productName": "URBIS",
+  "version": "0.1.0",
+  "description": "URBIS - projeto de vias urbanas, rodovias, loteamentos, drenagem e sinalização",
+  "author": "URBIS",
+  "license": "UNLICENSED",
+  "private": true,
+  "type": "module",
+  "main": "electron/main.cjs",
+  "scripts": {
+    "vendor": "node scripts/copy-vendor.js",
+    "test": "node --test tests/*.test.js",
+    "serve": "node scripts/serve.js",
+    "start": "npm run vendor && electron .",
+    "dist": "npm run vendor && electron-builder --win nsis --publish never"
+  },
+  "dependencies": {
+    "@kninnug/constrainautor": "^4.1.0",
+    "@mlightcad/libredwg-web": "^0.8.3",
+    "delaunator": "^5.1.0",
+    "exceljs": "^4.4.0",
+    "htm": "^3.1.1",
+    "jspdf": "^4.2.1",
+    "polygon-clipping": "^0.15.7",
+    "preact": "^10.29.8",
+    "robust-predicates": "^3.0.3",
+    "splaytree": "^3.1.2",
+    "three": "^0.187.0"
+  },
+  "devDependencies": {
+    "electron": "^45.2.1",
+    "electron-builder": "^26.0.0"
+  },
+  "build": {
+    "appId": "br.com.urbis.app",
+    "productName": "URBIS",
+    "copyright": "Uso interno",
+    "directories": {
+      "output": "dist",
+      "buildResources": "build"
+    },
+    "files": [
+      "electron/**",
+      "app/**",
+      "package.json"
+    ],
+    "fileAssociations": [
+      {
+        "ext": "urbis",
+        "name": "Projeto URBIS",
+        "description": "Projeto URBIS",
+        "role": "Editor"
+      }
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "build/icon.png",
+      "artifactName": "URBIS-Setup-${version}.${ext}"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "URBIS",
+      "language": "1046"
+    }
+  }
+}
